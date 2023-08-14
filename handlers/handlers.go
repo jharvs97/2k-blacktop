@@ -15,7 +15,7 @@ func HandleIndex(c *fiber.Ctx) error {
 	return c.Render("index", fiber.Map{}, "layouts/main")
 }
 
-func HandleGenerate(c *fiber.Ctx) error {
+func HandleGenerateTeam(c *fiber.Ctx) error {
 	playerCount, err := strconv.Atoi(c.FormValue("player-count", "2"))
 	if err != nil {
 		panic(err)
@@ -53,7 +53,6 @@ func HandleDefaultConfig(c *fiber.Ctx) error {
 var r *rand.Rand
 
 func generateTeams(config model.TeamConfig, playerCount int) ([]string, []string) {
-
 	if r == nil {
 		r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	}

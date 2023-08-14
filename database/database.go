@@ -98,11 +98,11 @@ func GetAllGuards() []model.Player {
 }
 
 func GetAllWings() []model.Player {
-	return guards
+	return wings
 }
 
 func GetAllBigs() []model.Player {
-	return guards
+	return bigs
 }
 
 func Init() error {

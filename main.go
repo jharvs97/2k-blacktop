@@ -29,7 +29,7 @@ func main() {
 
 	app.Get("/", handlers.HandleIndex)
 	app.Get("/defaultConfig", handlers.HandleDefaultConfig)
-	app.Post("/generate", handlers.HandleGenerate)
+	app.Post("/generateTeam", handlers.HandleGenerateTeam)
 	app.Post("/updateConfig", handlers.HandleUpdateConfig)
 
 	addr := ":6969"
