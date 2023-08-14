@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
@@ -16,20 +15,13 @@ func HandleIndex(c *fiber.Ctx) error {
 }
 
 func HandleGenerateTeam(c *fiber.Ctx) error {
-	playerCount, err := strconv.Atoi(c.FormValue("player-count", "2"))
+	configName := c.FormValue("config", "Guards")
+	config, err := database.GetConfigByName(configName)
 	if err != nil {
 		panic(err)
 	}
 
-	config, err := database.GetConfigByName(c.FormValue("config", ""), playerCount)
-	if err != nil {
-		panic(err)
-	}
-
-	team1, team2 := generateTeams(config, playerCount)
-
-	fmt.Println(team1)
-	fmt.Println(team2)
+	team1, team2 := generateTeams(config)
 
 	return c.Render("partials/players", fiber.Map{"team1": team1, "team2": team2})
 }
@@ -52,29 +44,33 @@ func HandleDefaultConfig(c *fiber.Ctx) error {
 
 var r *rand.Rand
 
-func generateTeams(config model.TeamConfig, playerCount int) ([]string, []string) {
+func generateTeams(config model.TeamConfig) ([]string, []string) {
 	if r == nil {
 		r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	}
 
-	teamSize := playerCount / 2
+	teamSize := config.PlayerCount / 2
 
 	team1 := make([]string, 0, teamSize)
 	team2 := make([]string, 0, teamSize)
 
-	appendPlayersToTeams(&team1, &team2, database.GetAllGuards(), config.NumGuards)
-	appendPlayersToTeams(&team1, &team2, database.GetAllWings(), config.NumWings)
-	appendPlayersToTeams(&team1, &team2, database.GetAllBigs(), config.NumBigs)
+	guards, _ := database.GetNRandomPlayers(config.NumGuards, model.Guard)
+	wings, _ := database.GetNRandomPlayers(config.NumWings, model.Wing)
+	bigs, _ := database.GetNRandomPlayers(config.NumBigs, model.Big)
+
+	appendPlayersToTeams(&team1, &team2, guards)
+	appendPlayersToTeams(&team1, &team2, wings)
+	appendPlayersToTeams(&team1, &team2, bigs)
 
 	return team1, team2
 }
 
-func appendPlayersToTeams(team1 *[]string, team2 *[]string, players []model.Player, numToAppend int) {
-	for i := 0; i < numToAppend; i++ {
-		i1 := r.Intn(len(players))
-		i2 := r.Intn(len(players))
+func appendPlayersToTeams(team1 *[]string, team2 *[]string, players []model.Player) {
+	for _, p := range players[0 : len(players)/2] {
+		*team1 = append(*team1, p.Name)
+	}
 
-		*team1 = append(*team1, players[i1].Name)
-		*team2 = append(*team2, players[i2].Name)
+	for _, p := range players[len(players)/2:] {
+		*team2 = append(*team2, p.Name)
 	}
 }

@@ -1,157 +1,97 @@
 package database
 
 import (
-	"encoding/csv"
+	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/jharvs97/2k-blacktop/model"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	guards []model.Player
-	wings  []model.Player
-	bigs   []model.Player
-)
+func GetConfigByName(name string) (model.TeamConfig, error) {
+	fmt.Println(name)
+	row := db.QueryRow(
+		"SELECT * FROM team_config WHERE name = :name",
+		sql.Named("name", name))
 
-var configs = map[int][]model.TeamConfig{
-	2: {
-		{
-			Name:      "Guards",
-			NumGuards: 1,
-		},
-		{
-			Name:     "Wings",
-			NumWings: 1,
-		},
-		{
-			Name:    "Bigs",
-			NumBigs: 1,
-		},
-	},
-	4: {
-		{
-			Name:      "Two Guards",
-			NumGuards: 2,
-		},
-		{
-			Name:      "Guard and Wing",
-			NumGuards: 1,
-			NumWings:  1,
-		},
-		{
-			Name:      "Guard and Big",
-			NumGuards: 1,
-			NumBigs:   1,
-		},
-		{
-			Name:     "Two Wings",
-			NumWings: 2,
-		},
-		{
-			Name:     "Wing and Big",
-			NumWings: 1,
-			NumBigs:  1,
-		},
-	},
-	6: {
-		{
-			Name:      "One Guard, One Wing and One Big",
-			NumGuards: 1,
-			NumWings:  1,
-			NumBigs:   1,
-		},
-		{
-			Name:      "3 Guards",
-			NumGuards: 3,
-		},
-	},
-	10: {
-		{
-			Name:      "Standard 5v5",
-			NumGuards: 1,
-			NumWings:  2,
-			NumBigs:   2,
-		},
-	},
-}
-
-func GetConfigByName(name string, playerCount int) (model.TeamConfig, error) {
-	var configs = configs[playerCount]
-
-	for _, config := range configs {
-		if config.Name == name {
-			fmt.Println("Found config ", config, " for name ", name)
-			return config, nil
-		}
+	err := row.Err()
+	if err != nil {
+		return model.TeamConfig{}, err
 	}
 
-	return model.TeamConfig{}, fmt.Errorf("can't find config '%s' for player count '%d'", name, playerCount)
+	var tc model.TeamConfig
+	var id int
+	err = row.Scan(&id, &tc.Name, &tc.NumGuards, &tc.NumWings, &tc.NumBigs, &tc.PlayerCount)
+
+	if err != nil {
+		return model.TeamConfig{}, err
+	}
+
+	fmt.Println(tc)
+
+	return tc, nil
 }
 
 func GetConfigsByPlayerCount(playerCount int) ([]model.TeamConfig, error) {
-	return configs[playerCount], nil
+	rows, err := db.Query(
+		"SELECT * FROM team_config WHERE player_count = :player_count",
+		sql.Named("player_count", playerCount))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var configs []model.TeamConfig
+
+	for rows.Next() {
+		var tc model.TeamConfig
+		var id int
+		err = rows.Scan(&id, &tc.Name, &tc.NumGuards, &tc.NumWings, &tc.NumBigs, &tc.PlayerCount)
+		if err != nil {
+			return nil, err
+		}
+
+		configs = append(configs, tc)
+	}
+
+	return configs, nil
 }
 
-func GetAllGuards() []model.Player {
-	return guards
+func GetNRandomPlayers(n int, position model.Position) ([]model.Player, error) {
+	fmt.Println(position)
+	rows, err := db.Query(
+		"SELECT * FROM player WHERE position_id = :position ORDER BY RANDOM() LIMIT :n",
+		sql.Named("position", position),
+		sql.Named("n", n))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var players []model.Player
+
+	for rows.Next() {
+		var p model.Player
+		var id int
+		err = rows.Scan(&id, &p.Name, &p.Team, &p.Position)
+		if err != nil {
+			return nil, err
+		}
+
+		players = append(players, p)
+	}
+
+	return players, nil
 }
 
-func GetAllWings() []model.Player {
-	return wings
-}
-
-func GetAllBigs() []model.Player {
-	return bigs
-}
+var db *sql.DB
 
 func Init() error {
-	file, err := os.Open("./database/2015-2016.csv")
 
+	var err error
+	db, err = sql.Open("sqlite3", "./blacktop.db")
 	if err != nil {
 		return err
-	}
-
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1
-	data, err := reader.ReadAll()
-
-	if err != nil {
-		return err
-	}
-
-	for _, row := range data[1:] {
-
-		name := row[1]
-		pos := row[2]
-		team := row[4]
-
-		p := model.Player{Name: name, Team: team}
-
-		switch pos {
-		case "PG":
-			fallthrough
-		case "PG-SG":
-			guards = append(guards, p)
-		case "SG":
-			fallthrough
-		case "SF":
-			fallthrough
-		case "SG-SF":
-			fallthrough
-		case "SF-PF":
-			wings = append(wings, p)
-		case "PF":
-			fallthrough
-		case "PF-C":
-			fallthrough
-		case "C":
-			bigs = append(bigs, p)
-		default:
-			fmt.Printf("Couldn't match %s to a position\n", pos)
-		}
 	}
 
 	return nil
