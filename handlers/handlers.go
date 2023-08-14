@@ -16,20 +16,17 @@ func HandleIndex(c *fiber.Ctx) error {
 }
 
 func HandleGenerate(c *fiber.Ctx) error {
-
 	playerCount, err := strconv.Atoi(c.FormValue("player-count", "2"))
-
 	if err != nil {
 		panic(err)
 	}
 
 	config, err := database.GetConfigByName(c.FormValue("config", ""), playerCount)
-
 	if err != nil {
 		panic(err)
 	}
 
-	team1, team2 := generate(config, playerCount)
+	team1, team2 := generateTeams(config, playerCount)
 
 	fmt.Println(team1)
 	fmt.Println(team2)
@@ -39,12 +36,11 @@ func HandleGenerate(c *fiber.Ctx) error {
 
 func HandleUpdateConfig(c *fiber.Ctx) error {
 	playerCount, err := strconv.Atoi(c.FormValue("player-count", "2"))
-
 	if err != nil {
 		panic(err)
 	}
 
-	configs, err := database.GetConfigsByPlayerCount(playerCount)
+	configs, _ := database.GetConfigsByPlayerCount(playerCount)
 
 	return c.Render("partials/config", fiber.Map{"configs": configs})
 }
@@ -56,7 +52,7 @@ func HandleDefaultConfig(c *fiber.Ctx) error {
 
 var r *rand.Rand
 
-func generate(config model.TeamConfig, playerCount int) ([]string, []string) {
+func generateTeams(config model.TeamConfig, playerCount int) ([]string, []string) {
 
 	if r == nil {
 		r = rand.New(rand.NewSource(time.Now().UnixNano()))

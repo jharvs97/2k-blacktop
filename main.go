@@ -33,10 +33,11 @@ func main() {
 	app.Post("/updateConfig", handlers.HandleUpdateConfig)
 
 	addr := ":6969"
-	fmt.Println("Listening on ", addr)
-	err = app.Listen(addr)
 
+	err = app.Listen(addr)
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("Listening on ", addr)
 }
