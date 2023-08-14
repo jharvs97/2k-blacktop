@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jharvs97/2k-blacktop/players"
+	"github.com/jharvs97/2k-blacktop/database"
+	"github.com/jharvs97/2k-blacktop/model"
 )
 
 func HandleIndex(c *fiber.Ctx) error {
@@ -22,7 +23,7 @@ func HandleGenerate(c *fiber.Ctx) error {
 		panic(err)
 	}
 
-	config, err := players.GetConfigByName(c.FormValue("config", ""), playerCount)
+	config, err := database.GetConfigByName(c.FormValue("config", ""), playerCount)
 
 	if err != nil {
 		panic(err)
@@ -43,19 +44,19 @@ func HandleUpdateConfig(c *fiber.Ctx) error {
 		panic(err)
 	}
 
-	var configs = players.Configs[playerCount]
+	configs, err := database.GetConfigsByPlayerCount(playerCount)
 
 	return c.Render("partials/config", fiber.Map{"configs": configs})
 }
 
 func HandleDefaultConfig(c *fiber.Ctx) error {
-	var configs = players.Configs[2]
+	configs, _ := database.GetConfigsByPlayerCount(2)
 	return c.Render("partials/config", fiber.Map{"configs": configs})
 }
 
 var r *rand.Rand
 
-func generate(config players.TeamConfig, playerCount int) ([]string, []string) {
+func generate(config model.TeamConfig, playerCount int) ([]string, []string) {
 
 	if r == nil {
 		r = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -66,14 +67,14 @@ func generate(config players.TeamConfig, playerCount int) ([]string, []string) {
 	team1 := make([]string, 0, teamSize)
 	team2 := make([]string, 0, teamSize)
 
-	appendPlayersToTeams(&team1, &team2, players.Guards, config.NumGuards)
-	appendPlayersToTeams(&team1, &team2, players.Wings, config.NumWings)
-	appendPlayersToTeams(&team1, &team2, players.Bigs, config.NumBigs)
+	appendPlayersToTeams(&team1, &team2, database.GetAllGuards(), config.NumGuards)
+	appendPlayersToTeams(&team1, &team2, database.GetAllWings(), config.NumWings)
+	appendPlayersToTeams(&team1, &team2, database.GetAllBigs(), config.NumBigs)
 
 	return team1, team2
 }
 
-func appendPlayersToTeams(team1 *[]string, team2 *[]string, players []players.Player, numToAppend int) {
+func appendPlayersToTeams(team1 *[]string, team2 *[]string, players []model.Player, numToAppend int) {
 	for i := 0; i < numToAppend; i++ {
 		i1 := r.Intn(len(players))
 		i2 := r.Intn(len(players))

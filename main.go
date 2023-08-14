@@ -6,12 +6,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/template/django/v3"
+	"github.com/jharvs97/2k-blacktop/database"
 	"github.com/jharvs97/2k-blacktop/handlers"
-	"github.com/jharvs97/2k-blacktop/players"
 )
 
 func main() {
-	err := players.Init()
+	err := database.Init()
 
 	if err != nil {
 		panic(err)
