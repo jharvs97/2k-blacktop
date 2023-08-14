@@ -87,7 +87,6 @@ func GetNRandomPlayers(n int, position model.Position) ([]model.Player, error) {
 var db *sql.DB
 
 func Init() error {
-
 	var err error
 	db, err = sql.Open("sqlite3", "./blacktop.db")
 	if err != nil {
