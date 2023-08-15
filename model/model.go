@@ -21,3 +21,8 @@ const (
 	Wing  Position = 2
 	Big   Position = 3
 )
+
+type Teams struct {
+	Team1 []Player
+	Team2 []Player
+}

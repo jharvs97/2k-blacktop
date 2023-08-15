@@ -2,14 +2,12 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/jharvs97/2k-blacktop/model"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func GetConfigByName(name string) (model.TeamConfig, error) {
-	fmt.Println(name)
 	row := db.QueryRow(
 		"SELECT * FROM team_config WHERE name = :name",
 		sql.Named("name", name))
@@ -26,8 +24,6 @@ func GetConfigByName(name string) (model.TeamConfig, error) {
 	if err != nil {
 		return model.TeamConfig{}, err
 	}
-
-	fmt.Println(tc)
 
 	return tc, nil
 }
@@ -57,8 +53,30 @@ func GetConfigsByPlayerCount(playerCount int) ([]model.TeamConfig, error) {
 	return configs, nil
 }
 
+func GetTeamsForConfig(config model.TeamConfig) (model.Teams, error) {
+	teams := model.Teams{}
+
+	_ = getRandomPlayersForPositionAndFillSlices(config.NumGuards, model.Guard, &teams.Team1, &teams.Team2)
+	_ = getRandomPlayersForPositionAndFillSlices(config.NumWings, model.Wing, &teams.Team1, &teams.Team2)
+	_ = getRandomPlayersForPositionAndFillSlices(config.NumBigs, model.Big, &teams.Team1, &teams.Team2)
+
+	return teams, nil
+}
+
+func getRandomPlayersForPositionAndFillSlices(n int, position model.Position, s1 *[]model.Player, s2 *[]model.Player) error {
+	if n > 0 {
+		p, err := GetNRandomPlayers(n, position)
+		if err != nil {
+			return err
+		}
+		*s1 = append(*s1, p[0:n/2]...)
+		*s2 = append(*s2, p[n/2:]...)
+	}
+
+	return nil
+}
+
 func GetNRandomPlayers(n int, position model.Position) ([]model.Player, error) {
-	fmt.Println(position)
 	rows, err := db.Query(
 		"SELECT * FROM player WHERE position_id = :position ORDER BY RANDOM() LIMIT :n",
 		sql.Named("position", position),
