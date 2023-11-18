@@ -28,9 +28,8 @@ func main() {
 	app.Use(logger.New())
 
 	app.Get("/", handlers.HandleIndex)
-	app.Get("/defaultConfig", handlers.HandleDefaultConfig)
-	app.Post("/generateTeam", handlers.HandleGenerateTeam)
-	app.Post("/updateConfig", handlers.HandleUpdateConfig)
+	app.Get("/generateConfig", handlers.HandleGenerateConfig)
+	app.Get("/generateTeam", handlers.HandleGenerateTeam)
 
 	addr := ":6969"
 

@@ -1,24 +1,16 @@
-<form hx-post="/generateTeam" hx-encoding="multipart/form-data" hx-target="#teams">
+<form hx-get="/generateTeam" hx-encoding="multipart/form-data" hx-target="#teams">
     <select 
         name="player-count" 
         id="player-count"
-        hx-post="/updateConfig"
-        hx-trigger="change"
-        hx-target="#config"
-        >
+        hx-get="/generateConfig"
+        hx-trigger="change, load"
+        hx-target="#config">
+        <option value="6">3v3</option>
         <option value="2">1v1</option>
         <option value="4">2v2</option>
-        <option value="6">3v3</option>
         <option value="10">5v5</option>
     </select>
-    <select 
-        name="config"
-        id="config"
-        hx-trigger="load"
-        hx-target="this"
-        hx-get="/defaultConfig"
-        >
-
+    <select  name="config" id="config">
     </select>
     <button type="submit">Generate</button>
 </form>

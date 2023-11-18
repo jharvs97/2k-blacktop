@@ -24,7 +24,7 @@ func HandleGenerateTeam(c *fiber.Ctx) error {
 	return c.Render("partials/teams", fiber.Map{"teams": teams})
 }
 
-func HandleUpdateConfig(c *fiber.Ctx) error {
+func HandleGenerateConfig(c *fiber.Ctx) error {
 	playerCount, err := strconv.Atoi(c.FormValue("player-count", "2"))
 	if err != nil {
 		panic(err)
@@ -32,11 +32,6 @@ func HandleUpdateConfig(c *fiber.Ctx) error {
 
 	configs, _ := database.GetConfigsByPlayerCount(playerCount)
 
-	return c.Render("partials/config", fiber.Map{"configs": configs})
-}
-
-func HandleDefaultConfig(c *fiber.Ctx) error {
-	configs, _ := database.GetConfigsByPlayerCount(2)
 	return c.Render("partials/config", fiber.Map{"configs": configs})
 }
 
