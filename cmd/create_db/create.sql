@@ -34,14 +34,14 @@ VALUES
 -- Seed in configs
 INSERT INTO team_config (name, num_guards, num_wings, num_bigs)
 VALUES
-    ('Guards', 2, 0, 0),
-    ('Wings', 0, 2, 0),
-    ('Bigs', 0, 0, 2),
-    ('Two Guards', 4, 0, 0),
-    ('Guard and Wing', 2, 2, 0),
-    ('Guard and Big', 2, 0, 2),
-    ('Two Wings', 0, 4, 0),
-    ('Wing and Big', 0, 2, 2),
-    ('One Guard, One Wing and One Big', 2, 2, 2),
-    ('Three Guards', 6, 0, 0),
-    ('Standard 5v5', 2, 4, 4);
+    ('Guards', 1, 0, 0),
+    ('Wings', 0, 1, 0),
+    ('Bigs', 0, 0, 1),
+    ('Two Guards', 2, 0, 0),
+    ('Guard and Wing', 1, 1, 0),
+    ('Guard and Big', 1, 0, 1),
+    ('Two Wings', 0, 2, 0),
+    ('Wing and Big', 0, 1, 1),
+    ('One Guard, One Wing and One Big', 1, 1, 1),
+    ('Three Guards', 3, 0, 0),
+    ('Standard 5v5', 1, 2, 2);

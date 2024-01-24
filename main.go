@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -31,7 +32,11 @@ func main() {
 	app.Get("/generateConfig", handlers.HandleGenerateConfig)
 	app.Get("/generateTeam", handlers.HandleGenerateTeam)
 
-	addr := ":6969"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	addr := fmt.Sprintf(":%s", port)
 
 	err = app.Listen(addr)
 	if err != nil {

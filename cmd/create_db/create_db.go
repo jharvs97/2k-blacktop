@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/jharvs97/2k-blacktop/model"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
-	db, err := sql.Open("sqlite3", "./blacktop.db")
+	db, err := sql.Open("sqlite", "./blacktop.db")
 	if err != nil {
 		panic(err)
 	}

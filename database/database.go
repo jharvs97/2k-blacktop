@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/jharvs97/2k-blacktop/model"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func GetConfigByName(name string) (model.TeamConfig, error) {
@@ -56,24 +56,37 @@ func GetConfigsByPlayerCount(playerCount int) ([]model.TeamConfig, error) {
 func GetTeamsForConfig(config model.TeamConfig) (model.Teams, error) {
 	teams := model.Teams{}
 
-	_ = getRandomPlayersForPositionAndFillSlices(config.NumGuards, model.Guard, &teams.Team1, &teams.Team2)
-	_ = getRandomPlayersForPositionAndFillSlices(config.NumWings, model.Wing, &teams.Team1, &teams.Team2)
-	_ = getRandomPlayersForPositionAndFillSlices(config.NumBigs, model.Big, &teams.Team1, &teams.Team2)
+	team1, _ := GetPlayersForConfig(config)
+	team2, _ := GetPlayersForConfig(config)
+
+	teams.Team1 = team1
+	teams.Team2 = team2
 
 	return teams, nil
 }
 
-func getRandomPlayersForPositionAndFillSlices(n int, position model.Position, s1 *[]model.Player, s2 *[]model.Player) error {
-	if n > 0 {
-		p, err := GetNRandomPlayers(n, position)
-		if err != nil {
-			return err
-		}
-		*s1 = append(*s1, p[0:n/2]...)
-		*s2 = append(*s2, p[n/2:]...)
-	}
+func GetPlayersForConfig(config model.TeamConfig) ([]model.Player, error) {
+	players := make([]model.Player, 0)
 
-	return nil
+	guards, err := GetNRandomPlayers(config.NumGuards, model.Guard)
+	if err != nil {
+		return nil, err
+	}
+	players = append(players, guards...)
+
+	wings, err := GetNRandomPlayers(config.NumWings, model.Wing)
+	if err != nil {
+		return nil, err
+	}
+	players = append(players, wings...)
+
+	bigs, err := GetNRandomPlayers(config.NumBigs, model.Big)
+	if err != nil {
+		return nil, err
+	}
+	players = append(players, bigs...)
+
+	return players, nil
 }
 
 func GetNRandomPlayers(n int, position model.Position) ([]model.Player, error) {
@@ -106,7 +119,7 @@ var db *sql.DB
 
 func Init() error {
 	var err error
-	db, err = sql.Open("sqlite3", "./blacktop.db")
+	db, err = sql.Open("sqlite", "./blacktop.db")
 	if err != nil {
 		return err
 	}
